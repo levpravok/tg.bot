@@ -17,7 +17,7 @@ from aiogram.types import (
 )
 
 TOKEN = "8657842139:AAGA4ArBvv66CZsOe-ksWhW3lhB4Vhu2ySU"
-ADMIN_ID = 1624728743
+ADMIN_ID = 1216617675
 ADMIN_ID_STR = str(ADMIN_ID)
 USERS_FILE = "users.json"
 BROADCASTS_FILE = "broadcasts.json"
@@ -373,6 +373,7 @@ async def save_student_name(message: types.Message, state: FSMContext):
     existing = users.get(user_id, {})
     if not isinstance(existing, dict):
         existing = {}
+    is_new_registration = not existing.get("full_name")
 
     users[user_id] = {
         "username": message.from_user.username,
@@ -382,6 +383,19 @@ async def save_student_name(message: types.Message, state: FSMContext):
 
     await state.clear()
     await message.answer("Имя сохранено.", reply_markup=student_keyboard())
+
+    if is_new_registration:
+        username = message.from_user.username or "без username"
+        try:
+            await bot.send_message(
+                ADMIN_ID,
+                "Новый ученик зарегистрирован:\n"
+                f"ID: {message.from_user.id}\n"
+                f"Username: @{username}\n"
+                f"Имя: {full_name}",
+            )
+        except Exception:
+            pass
 
 
 @dp.message(F.text == "📢 Новая рассылка")
